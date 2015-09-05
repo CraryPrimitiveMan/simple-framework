@@ -1,0 +1,22 @@
+{
+    "name": "craryprimitiveman/simple-framework",
+    "description": "A simple php framework",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "harrysun",
+            "email": "sunguangjun@126.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "sf\\": "src/",
+            "app\\": ""
+        }
+    },
+    "repositories": [
+        {"type": "composer", "url": "http://packagist.phpcomposer.com"},
+        {"packagist": false}
+    ]
+}
