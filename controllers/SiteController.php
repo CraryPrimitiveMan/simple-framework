@@ -2,12 +2,18 @@
 namespace app\controllers;
 
 use sf\web\Controller;
+use app\models\User;
 
 class SiteController extends Controller
 {
     public function actionTest()
     {
-        $data = ['first' => 'awesome-php-zh_CN', 'second' => 'simple-framework'];
+        $user = User::findOne(['age' => 20, 'name' => 'harry']);
+        $data = [
+            'first' => 'awesome-php-zh_CN',
+            'second' => 'simple-framework',
+            'user' => $user
+        ];
         echo $this->toJson($data);
     }
 
