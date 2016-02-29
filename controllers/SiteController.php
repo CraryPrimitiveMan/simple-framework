@@ -8,7 +8,9 @@ class SiteController extends Controller
 {
     public function actionTest()
     {
-        $user = User::findOne(['age' => 20, 'name' => 'harry']);
+        //$user = User::findOne(['age' => 20, 'name' => 'harry']);
+        //$user = User::findAll();
+        $user = User::updateAll(['age' => 20], ['age' => 21]);
         $data = [
             'first' => 'awesome-php-zh_CN',
             'second' => 'simple-framework',

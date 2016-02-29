@@ -108,9 +108,38 @@ class Model implements ModelInterface
      * @param mixed $condition a set of column values
      * @return array an array of Model instance, or an empty array if nothing matches.
      */
-    public static function findAll($condition)
+    public static function findAll($condition = null)
     {
+        $sql = 'select * from ' . static::tableName();
 
+        if (!empty($condition)) {
+            $sql .= ' where ';
+            $params = array_values($condition);
+            $keys = [];
+            foreach ($condition as $key => $value) {
+                array_push($keys, "$key = ?");
+            }
+            $sql .= implode(' and ', $keys);
+        }
+
+        $stmt = static::getDb()->prepare($sql);
+        $rs = $stmt->execute($params);
+        $models = [];
+
+        if ($rs) {
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($rows as $row) {
+                if (!empty($row)) {
+                    $model = new static();
+                    foreach ($row as $rowKey => $rowValue) {
+                        $model->$rowKey = $rowValue;
+                    }
+                    array_push($models, $model);
+                }
+            }
+        }
+
+        return $models;
     }
 
     /**
@@ -128,7 +157,30 @@ class Model implements ModelInterface
      */
     public static function updateAll($condition, $attributes)
     {
+        $sql = 'update ' . static::tableName();
+        $params = [];
 
+        if (!empty($attributes)) {
+            $sql .= ' set ';
+            $params = array_values($attributes);
+            $keys = [];
+            foreach ($attributes as $key => $value) {
+                array_push($keys, "$key = ?");
+            }
+            $sql .= implode(' , ', $keys);
+        }
+
+        if (!empty($condition)) {
+            $sql .= ' where ';
+            $params = array_merge($params, array_values($condition));
+            $keys = [];
+            foreach ($condition as $key => $value) {
+                array_push($keys, "$key = ?");
+            }
+            $sql .= implode(' and ', $keys);
+        }
+        $stmt = static::getDb()->prepare($sql);
+        return $stmt->execute($params);
     }
 
     /**
