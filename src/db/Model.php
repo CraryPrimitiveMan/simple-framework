@@ -25,7 +25,11 @@ class Model implements ModelInterface
             $database = 'sf';
             $username = 'jun';
             $password = 'jun';
-            static::$pdo = new PDO("mysql:host=$host;dbname=$database", $username, $password);
+            $options = [
+                PDO::ATTR_EMULATE_PREPARES => false,
+                PDO::ATTR_STRINGIFY_FETCHES => false
+            ];
+            static::$pdo = new PDO("mysql:host=$host;dbname=$database", $username, $password, $options);
             static::$pdo->exec("set names 'utf8'");
         }
 
@@ -61,15 +65,21 @@ class Model implements ModelInterface
      * @param mixed $condition a set of column values
      * @return static|null Model instance matching the condition, or null if nothing matches.
      */
-    public static function findOne($condition)
+    public static function findOne($condition = null)
     {
-        $sql = 'select * from ' . static::tableName() . ' where ';
-        $params = array_values($condition);
-        $keys = [];
-        foreach ($condition as $key => $value) {
-            array_push($keys, "$key = ?");
+        $sql = 'select * from ' . static::tableName();
+        $params = [];
+
+        if (!empty($condition)) {
+            $sql .= ' where ';
+            $params = array_values($condition);
+            $keys = [];
+            foreach ($condition as $key => $value) {
+                array_push($keys, "$key = ?");
+            }
+            $sql .= implode(' and ', $keys);
         }
-        $sql .= implode(' and ', $keys);
+
         $stmt = static::getDb()->prepare($sql);
         $rs = $stmt->execute($params);
 
