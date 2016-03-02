@@ -55,6 +55,43 @@ class Model implements ModelInterface
     }
 
     /**
+     * Build a sql where part
+     * @param mixed $condition a set of column values
+     * @return string
+     */
+    public static function buildWhere($condition, $params = null)
+    {
+        if (is_null($params)) {
+            $params = [];
+        }
+
+        $where = '';
+        if (!empty($condition)) {
+            $where .= ' where ';
+            $keys = [];
+            foreach ($condition as $key => $value) {
+                array_push($keys, "$key = ?");
+                array_push($params, $value);
+            }
+            $where .= implode(' and ', $keys);
+        }
+        return [$where, $params];
+    }
+
+    /**
+     * Convert array to model
+     * @param  mixed $row the row data from database
+     */
+    public static function arr2Model($row)
+    {
+        $model = new static();
+        foreach ($row as $rowKey => $rowValue) {
+            $model->$rowKey = $rowValue;
+        }
+        return $model;
+    }
+
+    /**
      * Returns a single model instance by a primary key or an array of column values.
      *
      * ```php
@@ -67,18 +104,8 @@ class Model implements ModelInterface
      */
     public static function findOne($condition = null)
     {
-        $sql = 'select * from ' . static::tableName();
-        $params = [];
-
-        if (!empty($condition)) {
-            $sql .= ' where ';
-            $params = array_values($condition);
-            $keys = [];
-            foreach ($condition as $key => $value) {
-                array_push($keys, "$key = ?");
-            }
-            $sql .= implode(' and ', $keys);
-        }
+        list($where, $params) = static::buildWhere($condition);
+        $sql = 'select * from ' . static::tableName() . $where;
 
         $stmt = static::getDb()->prepare($sql);
         $rs = $stmt->execute($params);
@@ -86,11 +113,7 @@ class Model implements ModelInterface
         if ($rs) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!empty($row)) {
-                $model = new static();
-                foreach ($row as $rowKey => $rowValue) {
-                    $model->$rowKey = $rowValue;
-                }
-                return $model;
+                return static::arr2Model($row);
             }
         }
 
@@ -110,17 +133,8 @@ class Model implements ModelInterface
      */
     public static function findAll($condition = null)
     {
-        $sql = 'select * from ' . static::tableName();
-
-        if (!empty($condition)) {
-            $sql .= ' where ';
-            $params = array_values($condition);
-            $keys = [];
-            foreach ($condition as $key => $value) {
-                array_push($keys, "$key = ?");
-            }
-            $sql .= implode(' and ', $keys);
-        }
+        list($where, $params) = static::buildWhere($condition);
+        $sql = 'select * from ' . static::tableName() . $where;
 
         $stmt = static::getDb()->prepare($sql);
         $rs = $stmt->execute($params);
@@ -130,10 +144,7 @@ class Model implements ModelInterface
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             foreach ($rows as $row) {
                 if (!empty($row)) {
-                    $model = new static();
-                    foreach ($row as $rowKey => $rowValue) {
-                        $model->$rowKey = $rowValue;
-                    }
+                    $model = static::arr2Model($row);
                     array_push($models, $model);
                 }
             }
@@ -170,17 +181,15 @@ class Model implements ModelInterface
             $sql .= implode(' , ', $keys);
         }
 
-        if (!empty($condition)) {
-            $sql .= ' where ';
-            $params = array_merge($params, array_values($condition));
-            $keys = [];
-            foreach ($condition as $key => $value) {
-                array_push($keys, "$key = ?");
-            }
-            $sql .= implode(' and ', $keys);
-        }
+        list($where, $params) = static::buildWhere($condition, $params);
+        $sql .= $where;
+
         $stmt = static::getDb()->prepare($sql);
-        return $stmt->execute($params);
+        $execResult = $stmt->execute($params);
+        if ($execResult) {
+            $execResult = $stmt->rowCount();
+        }
+        return $execResult;
     }
 
     /**
@@ -199,7 +208,15 @@ class Model implements ModelInterface
      */
     public static function deleteAll($condition)
     {
+        list($where, $params) = static::buildWhere($condition);
+        $sql = 'delete from ' . static::tableName() . $where;
 
+        $stmt = static::getDb()->prepare($sql);
+        $execResult = $stmt->execute($params);
+        if ($execResult) {
+            $execResult = $stmt->rowCount();
+        }
+        return $execResult;
     }
 
     /**
@@ -218,7 +235,25 @@ class Model implements ModelInterface
      */
     public function insert()
     {
+        $sql = 'insert into ' . static::tableName();
+        $params = [];
+        $keys = [];
+        foreach ($this as $key => $value) {
+            array_push($keys, $key);
+            array_push($params, $value);
+        }
+        $holders = array_fill(0, count($keys), '?');
+        $sql .= ' (' . implode(' , ', $keys) . ') values ( ' . implode(' , ', $holders) . ')';
 
+        $stmt = static::getDb()->prepare($sql);
+        $execResult = $stmt->execute($params);
+        $primaryKeys = static::primaryKey();
+        foreach ($primaryKeys as $name) {
+            // Get the primary key
+            $lastId = static::getDb()->lastInsertId($name);
+            $this->$name = (int) $lastId;
+        }
+        return $execResult;
     }
 
     /**
@@ -239,7 +274,20 @@ class Model implements ModelInterface
      */
     public function update()
     {
+        $primaryKeys = static::primaryKey();
+        $condition = [];
+        foreach ($primaryKeys as $name) {
+            $condition[$name] = isset($this->$name) ? $this->$name : null;
+        }
 
+        $attributes = [];
+        foreach ($this as $key => $value) {
+            if (!in_array($key, $primaryKeys, true)) {
+                $attributes[$key] = $value;
+            }
+        }
+
+        return static::updateAll($condition, $attributes) !== false;
     }
 
     /**
@@ -250,6 +298,12 @@ class Model implements ModelInterface
      */
     public function delete()
     {
+        $primaryKeys = static::primaryKey();
+        $condition = [];
+        foreach ($primaryKeys as $name) {
+            $condition[$name] = isset($this->$name) ? $this->$name : null;
+        }
 
+        return static::deleteAll($condition) !== false;
     }
 }
