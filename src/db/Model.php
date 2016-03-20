@@ -2,6 +2,7 @@
 namespace sf\db;
 
 use PDO;
+use Sf;
 
 /**
  * Model is the base class for data models.
@@ -21,15 +22,7 @@ class Model implements ModelInterface
     public static function getDb()
     {
         if (empty(static::$pdo)) {
-            $host = 'localhost';
-            $database = 'sf';
-            $username = 'jun';
-            $password = 'jun';
-            $options = [
-                PDO::ATTR_EMULATE_PREPARES => false,
-                PDO::ATTR_STRINGIFY_FETCHES => false
-            ];
-            static::$pdo = new PDO("mysql:host=$host;dbname=$database", $username, $password, $options);
+            static::$pdo = Sf::createObject('db')->getDb();
             static::$pdo->exec("set names 'utf8'");
         }
 
