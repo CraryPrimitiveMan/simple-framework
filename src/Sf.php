@@ -20,6 +20,7 @@ class Sf
         foreach ($config as $key => $value) {
             $instance->$key = $value;
         }
+        $instance->init();
         return $instance;
     }
 }

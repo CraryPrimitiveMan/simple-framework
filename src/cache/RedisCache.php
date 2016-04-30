@@ -1,19 +1,40 @@
 <?php
 namespace sf\cache;
 
+use Redis;
+use Exception;
 use sf\base\Component;
 
 /**
  * CacheInterface
  * @author Harry Sun <sunguangjun@126.com>
  */
-class FileCache extends Component implements CacheInterface
+class RedisCache extends Component implements CacheInterface
 {
     /**
-     * @var string the directory to store cache files.
-     * If not set, it will use the "cache" subdirectory under the application runtime path.
+     * @var Redis|array the Redis object or the config of redis
      */
-    public $cachePath;
+    public $redis;
+
+    public function init()
+    {
+        if (is_array($this->redis)) {
+            extract($this->redis);
+            $redis = new Redis();
+            $redis->connect($host, $port);
+            if (!empty($password)) {
+                $redis->auth($password);
+            }
+            $redis->select($database);
+            if (!empty($options)) {
+                call_user_func_array([$redis, 'setOption'], $options);
+            }
+            $this->redis = $redis;
+        }
+        if (!$this->redis instanceof Redis) {
+            throw new Exception('Cache::redis must be either a Redis connection instance.');
+        }
+    }
     /**
      * Builds a normalized cache key from a given key.
      *
@@ -37,12 +58,7 @@ class FileCache extends Component implements CacheInterface
     public function get($key)
     {
         $key = $this->buildKey($key);
-        $cacheFile = $this->cachePath . $key;
-        if (@filemtime($cacheFile) > time()) {
-            return unserialize(@file_get_contents($cacheFile));
-        } else {
-            return false;
-        }
+        return $this->redis->get($key);
     }
 
     /**
@@ -60,8 +76,7 @@ class FileCache extends Component implements CacheInterface
     public function exists($key)
     {
         $key = $this->buildKey($key);
-        $cacheFile = $this->cachePath . $key;
-        return @filemtime($cacheFile) > time();
+        return $this->redis->exists($key);
     }
 
     /**
@@ -76,11 +91,11 @@ class FileCache extends Component implements CacheInterface
      */
     public function mget($keys)
     {
-        $results = [];
-        foreach ($keys as $key) {
-            $results[$key] = $this->get($key);
+        for ($index = 0; $index < count($keys); $index++) {
+            $keys[$index] = $this->buildKey($keys[$index]);
         }
-        return $results;
+
+        return $this->redis->mGet($keys);
     }
 
     /**
@@ -97,15 +112,11 @@ class FileCache extends Component implements CacheInterface
     public function set($key, $value, $duration = 0)
     {
         $key = $this->buildKey($key);
-        $cacheFile = $this->cachePath . $key;
-        $value = serialize($value);
-        if (@file_put_contents($cacheFile, $value, LOCK_EX) !== false) {
-            if ($duration <= 0) {
-                $duration = 31536000; // 1 year
-            }
-            return touch($cacheFile, $duration + time());
+        if ($duration !== 0) {
+            $expire = (int) $duration * 1000;
+            return $this->redis->set($key, $value, $expire);
         } else {
-            return false;
+            return $this->redis->set($key, $value);
         }
     }
 
@@ -177,8 +188,7 @@ class FileCache extends Component implements CacheInterface
     public function delete($key)
     {
         $key = $this->buildKey($key);
-        $cacheFile = $this->cachePath . $key;
-        return unlink($cacheFile);
+        return $this->redis->delete($key);
     }
 
     /**
@@ -188,14 +198,6 @@ class FileCache extends Component implements CacheInterface
      */
     public function flush()
     {
-        $dir = @dir($this->cachePath);
-
-        while (($file = $dir->read()) !== false) {
-            if ($file !== '.' && $file !== '..') {
-                unlink($this->cachePath . $file);
-            }
-        }
-
-        $dir->close();
+        return $this->redis->flushDb();
     }
 }

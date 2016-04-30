@@ -2,12 +2,13 @@
 namespace sf\db;
 
 use PDO;
+use sf\base\Component;
 
 /**
  * Connection represents a connection to a database via [PDO](php.net/manual/en/book.pdo.php).
  * @author Harry Sun <sunguangjun@126.com>
  */
-class Connection
+class Connection extends Component
 {
     /**
      * @var string the Data Source Name, or DSN, contains the information required to connect to the database.
