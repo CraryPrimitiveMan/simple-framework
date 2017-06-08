@@ -32,11 +32,11 @@ class SiteController extends Controller
 
     public function actionView()
     {
-        $cache = Sf::createObject('cache');
-        $cache->set('111', '2222');
-        $result = $cache->get('111');
-        $cache->flush();
-        var_dump($result);die;
+//        $cache = Sf::createObject('cache');
+//        $cache->set('111', '2222');
+//        $result = $cache->get('111');
+//        $cache->flush();
+//        var_dump($result);die;
         $this->render('site/view', ['body' => 'Test body information']);
     }
 

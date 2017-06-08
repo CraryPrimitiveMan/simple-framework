@@ -14,8 +14,24 @@ class Controller extends \sf\base\Controller
      */
     public function render($view, $params = [])
     {
+        $file = '../views/' . $view . '.sf';
+        $fileContent = file_get_contents($file);
+        $result = '';
+        foreach (token_get_all($fileContent) as $token) {
+            if (is_array($token)) {
+                list($id, $content) = $token;
+                if ($id == T_INLINE_HTML) {
+                    $content = preg_replace('/{{(.*)}}/', '<?php echo $1 ?>', $content);
+                }
+                $result .= $content;
+            } else {
+                $result .= $token;
+            }
+        }
+        $generatedFile = '../runtime/cache/' . md5($file);
+        file_put_contents($generatedFile, $result);
         extract($params);
-        return require '../views/' . $view . '.php';
+        require_once $generatedFile;
     }
 
     /**

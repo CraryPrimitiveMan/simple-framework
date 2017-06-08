@@ -22,11 +22,12 @@ abstract class Application
      */
     public function run()
     {
-        try {
+//        try {
             return $this->handleRequest();
-        } catch (Exception $e) {
-            return $e;
-        }
+//        } catch (Exception $e) {
+//            var_dump($e);
+//            return $e;
+//        }
     }
 
     /**
