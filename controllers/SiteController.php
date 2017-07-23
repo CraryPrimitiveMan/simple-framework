@@ -37,7 +37,7 @@ class SiteController extends Controller
 //        $result = $cache->get('111');
 //        $cache->flush();
 //        var_dump($result);die;
-        $this->render('site/view', ['body' => 'Test body information']);
+        $this->render('site/view', ['body' => 'Test body information', 'users' => [1, 2]]);
     }
 
     public function actionCache()

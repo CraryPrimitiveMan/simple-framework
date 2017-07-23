@@ -10,5 +10,28 @@ $str = "{{ $title }}";
     <body>
         <h2>{{ $str }}</h2>
         <p>{{ $body }}<p>
+        @if (count($users) === 1)
+            I have one $user!
+        @elseif (count($users) > 1)
+            I have multiple $users!
+        @else
+            I don't have any $users!
+        @endif
+        <br/>
+        @for ($i = 0; $i < 10; $i++)
+            The current value is {{ $i }}<br/>
+        @endfor
+
+        @foreach ($users as $user)
+            <p>This is user {{ $user }}</p>
+        @endforeach
+
+        @while (true)
+            <p>I'm looping once.</p>
+            @if ($i > 1)
+                @break
+            @endif
+        @endwhile
+        
     </body>
 </html>
