@@ -1,8 +1,10 @@
 <?php
+
 namespace sf\base;
 
 /**
  * Component is the base class for most sf classes.
+ *
  * @author Harry Sun <sunguangjun@126.com>
  */
 class Component

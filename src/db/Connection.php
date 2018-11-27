@@ -1,4 +1,5 @@
 <?php
+
 namespace sf\db;
 
 use PDO;
@@ -6,14 +7,16 @@ use sf\base\Component;
 
 /**
  * Connection represents a connection to a database via [PDO](php.net/manual/en/book.pdo.php).
+ *
  * @author Harry Sun <sunguangjun@126.com>
  */
 class Connection extends Component
 {
     /**
      * @var string the Data Source Name, or DSN, contains the information required to connect to the database.
-     * Please refer to the [PHP manual](http://www.php.net/manual/en/function.PDO-construct.php) on
-     * the format of the DSN string.
+     *             Please refer to the [PHP manual](http://www.php.net/manual/en/function.PDO-construct.php) on
+     *             the format of the DSN string.
+     *
      * @see charset
      */
     public $dsn;
@@ -30,9 +33,9 @@ class Connection extends Component
 
     /**
      * @var array PDO attributes (name => value)
-     * to establish a DB connection. Please refer to the
-     * [PHP manual](http://www.php.net/manual/en/function.PDO-setAttribute.php) for
-     * details about available attributes.
+     *            to establish a DB connection. Please refer to the
+     *            [PHP manual](http://www.php.net/manual/en/function.PDO-setAttribute.php) for
+     *            details about available attributes.
      */
     public $attributes;
 
