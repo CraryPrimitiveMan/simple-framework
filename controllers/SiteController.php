@@ -1,9 +1,10 @@
 <?php
+
 namespace app\controllers;
 
+use app\models\User;
 use Sf;
 use sf\web\Controller;
-use app\models\User;
 
 class SiteController extends Controller
 {
@@ -23,9 +24,9 @@ class SiteController extends Controller
         // $user = User::deleteAll(['name' => 'jun1']);
         // // $user = User::updateAll(['age' => 21], ['age' => 20]);
         $data = [
-            'first' => 'awesome-php-zh_CN',
+            'first'  => 'awesome-php-zh_CN',
             'second' => 'simple-framework',
-            'user' => $user
+            'user'   => $user,
         ];
         echo $this->toJson($data);
     }

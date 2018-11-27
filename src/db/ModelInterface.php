@@ -1,20 +1,24 @@
 <?php
+
 namespace sf\db;
 
 /**
- * ModelInterface
+ * ModelInterface.
+ *
  * @author Harry Sun <sunguangjun@126.com>
  */
 interface ModelInterface
 {
     /**
      * Declares the name of the database table associated with this Model class.
+     *
      * @return string the table name
      */
     public static function tableName();
 
     /**
      * Returns the primary key **name(s)** for this Model class.
+     *
      * @return string[] the primary key name(s) for this Model class.
      */
     public static function primaryKey();
@@ -28,6 +32,7 @@ interface ModelInterface
      * ```
      *
      * @param mixed $condition a set of column values
+     *
      * @return static|null Model instance matching the condition, or null if nothing matches.
      */
     public static function findOne($condition);
@@ -41,22 +46,24 @@ interface ModelInterface
      * ```
      *
      * @param mixed $condition a set of column values
+     *
      * @return array an array of Model instance, or an empty array if nothing matches.
      */
     public static function findAll($condition);
 
     /**
      * Updates models using the provided attribute values and conditions.
-     * For example, to change the status to be 2 for all customers whose status is 1:
+     * For example, to change the status to be 2 for all customers whose status is 1:.
      *
      * ~~~
      * Customer::updateAll(['status' => 1], ['status' => '2']);
      * ~~~
      *
      * @param array $attributes attribute values (name-value pairs) to be saved for the model.
-     * @param array $condition the condition that matches the models that should get updated.
-     * An empty condition will match all models.
-     * @return integer the number of rows updated
+     * @param array $condition  the condition that matches the models that should get updated.
+     *                          An empty condition will match all models.
+     *
+     * @return int the number of rows updated
      */
     public static function updateAll($condition, $attributes);
 
@@ -71,8 +78,9 @@ interface ModelInterface
      * ~~~
      *
      * @param array $condition the condition that matches the models that should get deleted.
-     * An empty condition will match all models.
-     * @return integer the number of rows deleted
+     *                         An empty condition will match all models.
+     *
+     * @return int the number of rows deleted
      */
     public static function deleteAll($condition);
 
@@ -88,7 +96,7 @@ interface ModelInterface
      * $customer->insert();
      * ```
      *
-     * @return boolean whether the model is inserted successfully.
+     * @return bool whether the model is inserted successfully.
      */
     public function insert();
 
@@ -104,17 +112,17 @@ interface ModelInterface
      * $customer->update();
      * ```
      *
-     * @return integer|boolean the number of rows affected.
-     * Note that it is possible that the number of rows affected is 0, even though the
-     * update execution is successful.
+     * @return int|bool the number of rows affected.
+     *                  Note that it is possible that the number of rows affected is 0, even though the
+     *                  update execution is successful.
      */
     public function update();
 
     /**
      * Deletes the model from the database.
      *
-     * @return integer|boolean the number of rows deleted.
-     * Note that it is possible that the number of rows deleted is 0, even though the deletion execution is successful.
+     * @return int|bool the number of rows deleted.
+     *                  Note that it is possible that the number of rows deleted is 0, even though the deletion execution is successful.
      */
     public function delete();
 }

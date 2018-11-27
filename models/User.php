@@ -1,13 +1,15 @@
 <?php
+
 namespace app\models;
 
 use sf\db\Model;
 
 /**
- * User model
- * @property integer $id
+ * User model.
+ *
+ * @property int $id
  * @property string $name
- * @property integer $age
+ * @property int $age
  */
 class User extends Model
 {

@@ -1,4 +1,5 @@
 <?php
+
 namespace sf\db;
 
 use PDO;
@@ -6,17 +7,19 @@ use Sf;
 
 /**
  * Model is the base class for data models.
+ *
  * @author Harry Sun <sunguangjun@126.com>
  */
 class Model implements ModelInterface
 {
     /**
-     * @var $pdo PDO instance
+     * @var PDO instance
      */
     public static $pdo;
 
     /**
-     * Get pdo instance
+     * Get pdo instance.
+     *
      * @return PDO
      */
     public static function getDb()
@@ -31,6 +34,7 @@ class Model implements ModelInterface
 
     /**
      * Declares the name of the database table associated with this Model class.
+     *
      * @return string the table name
      */
     public static function tableName()
@@ -40,6 +44,7 @@ class Model implements ModelInterface
 
     /**
      * Returns the primary key **name(s)** for this Model class.
+     *
      * @return string[] the primary key name(s) for this Model class.
      */
     public static function primaryKey()
@@ -48,8 +53,10 @@ class Model implements ModelInterface
     }
 
     /**
-     * Build a sql where part
+     * Build a sql where part.
+     *
      * @param mixed $condition a set of column values
+     *
      * @return string
      */
     public static function buildWhere($condition, $params = null)
@@ -68,12 +75,14 @@ class Model implements ModelInterface
             }
             $where .= implode(' and ', $keys);
         }
+
         return [$where, $params];
     }
 
     /**
-     * Convert array to model
-     * @param  mixed $row the row data from database
+     * Convert array to model.
+     *
+     * @param mixed $row the row data from database
      */
     public static function arr2Model($row)
     {
@@ -81,6 +90,7 @@ class Model implements ModelInterface
         foreach ($row as $rowKey => $rowValue) {
             $model->$rowKey = $rowValue;
         }
+
         return $model;
     }
 
@@ -93,12 +103,13 @@ class Model implements ModelInterface
      * ```
      *
      * @param mixed $condition a set of column values
+     *
      * @return static|null Model instance matching the condition, or null if nothing matches.
      */
     public static function findOne($condition = null)
     {
         list($where, $params) = static::buildWhere($condition);
-        $sql = 'select * from ' . static::tableName() . $where;
+        $sql = 'select * from '.static::tableName().$where;
 
         $stmt = static::getDb()->prepare($sql);
         $rs = $stmt->execute($params);
@@ -109,8 +120,6 @@ class Model implements ModelInterface
                 return static::arr2Model($row);
             }
         }
-
-        return null;
     }
 
     /**
@@ -122,12 +131,13 @@ class Model implements ModelInterface
      * ```
      *
      * @param mixed $condition a set of column values
+     *
      * @return array an array of Model instance, or an empty array if nothing matches.
      */
     public static function findAll($condition = null)
     {
         list($where, $params) = static::buildWhere($condition);
-        $sql = 'select * from ' . static::tableName() . $where;
+        $sql = 'select * from '.static::tableName().$where;
 
         $stmt = static::getDb()->prepare($sql);
         $rs = $stmt->execute($params);
@@ -148,20 +158,21 @@ class Model implements ModelInterface
 
     /**
      * Updates models using the provided attribute values and conditions.
-     * For example, to change the status to be 2 for all customers whose status is 1:
+     * For example, to change the status to be 2 for all customers whose status is 1:.
      *
      * ~~~
      * Customer::updateAll(['status' => 1], ['status' => '2']);
      * ~~~
      *
      * @param array $attributes attribute values (name-value pairs) to be saved for the model.
-     * @param array $condition the condition that matches the models that should get updated.
-     * An empty condition will match all models.
-     * @return integer the number of rows updated
+     * @param array $condition  the condition that matches the models that should get updated.
+     *                          An empty condition will match all models.
+     *
+     * @return int the number of rows updated
      */
     public static function updateAll($condition, $attributes)
     {
-        $sql = 'update ' . static::tableName();
+        $sql = 'update '.static::tableName();
         $params = [];
 
         if (!empty($attributes)) {
@@ -182,6 +193,7 @@ class Model implements ModelInterface
         if ($execResult) {
             $execResult = $stmt->rowCount();
         }
+
         return $execResult;
     }
 
@@ -196,19 +208,21 @@ class Model implements ModelInterface
      * ~~~
      *
      * @param array $condition the condition that matches the models that should get deleted.
-     * An empty condition will match all models.
-     * @return integer the number of rows deleted
+     *                         An empty condition will match all models.
+     *
+     * @return int the number of rows deleted
      */
     public static function deleteAll($condition)
     {
         list($where, $params) = static::buildWhere($condition);
-        $sql = 'delete from ' . static::tableName() . $where;
+        $sql = 'delete from '.static::tableName().$where;
 
         $stmt = static::getDb()->prepare($sql);
         $execResult = $stmt->execute($params);
         if ($execResult) {
             $execResult = $stmt->rowCount();
         }
+
         return $execResult;
     }
 
@@ -224,11 +238,11 @@ class Model implements ModelInterface
      * $customer->insert();
      * ```
      *
-     * @return boolean whether the model is inserted successfully.
+     * @return bool whether the model is inserted successfully.
      */
     public function insert()
     {
-        $sql = 'insert into ' . static::tableName();
+        $sql = 'insert into '.static::tableName();
         $params = [];
         $keys = [];
         foreach ($this as $key => $value) {
@@ -236,7 +250,7 @@ class Model implements ModelInterface
             array_push($params, $value);
         }
         $holders = array_fill(0, count($keys), '?');
-        $sql .= ' (' . implode(' , ', $keys) . ') values ( ' . implode(' , ', $holders) . ')';
+        $sql .= ' ('.implode(' , ', $keys).') values ( '.implode(' , ', $holders).')';
 
         $stmt = static::getDb()->prepare($sql);
         $execResult = $stmt->execute($params);
@@ -246,6 +260,7 @@ class Model implements ModelInterface
             $lastId = static::getDb()->lastInsertId($name);
             $this->$name = (int) $lastId;
         }
+
         return $execResult;
     }
 
@@ -261,9 +276,9 @@ class Model implements ModelInterface
      * $customer->update();
      * ```
      *
-     * @return integer|boolean the number of rows affected.
-     * Note that it is possible that the number of rows affected is 0, even though the
-     * update execution is successful.
+     * @return int|bool the number of rows affected.
+     *                  Note that it is possible that the number of rows affected is 0, even though the
+     *                  update execution is successful.
      */
     public function update()
     {
@@ -286,8 +301,8 @@ class Model implements ModelInterface
     /**
      * Deletes the model from the database.
      *
-     * @return integer|boolean the number of rows deleted.
-     * Note that it is possible that the number of rows deleted is 0, even though the deletion execution is successful.
+     * @return int|bool the number of rows deleted.
+     *                  Note that it is possible that the number of rows deleted is 0, even though the deletion execution is successful.
      */
     public function delete()
     {
